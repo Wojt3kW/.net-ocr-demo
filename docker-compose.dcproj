@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Projekt Docker Compose dla Visual Studio: F5 uruchamia wszystkie silniki OCR (kontenery)
+  oraz runner .NET z debuggerem. Profile uruchomienia: launchSettings.json (obok tego pliku).
+  Z wiersza poleceń używaj `docker compose` bezpośrednio (patrz README).
+-->
+<Project ToolsVersion="15.0" Sdk="Microsoft.Docker.Sdk">
+  <PropertyGroup Label="Globals">
+    <ProjectVersion>2.1</ProjectVersion>
+    <DockerTargetOS>Linux</DockerTargetOS>
+    <ProjectGuid>216E134B-CE25-47C0-A348-C87345FF0FA2</ProjectGuid>
+    <DockerLaunchAction>None</DockerLaunchAction>
+    <DockerServiceName>runner</DockerServiceName>
+    <!-- Osobna nazwa projektu Compose niż przy uruchomieniu z CLI (ocr-demo) – VS zatrzymuje swoje kontenery
+         przy zamykaniu solucji i nie powinien ruszać stosu uruchomionego ręcznie. Porty 8101-8104 są wspólne,
+         więc oba stosy nie mogą działać jednocześnie. -->
+    <DockerComposeProjectName>ocr-demo-vs</DockerComposeProjectName>
+    <!-- Runner startuje dopiero, gdy silniki przejdą healthcheck (depends_on: service_healthy). VS 17.13+. -->
+    <DependencyAwareStart>true</DependencyAwareStart>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="docker-compose.override.yml">
+      <DependentUpon>docker-compose.yml</DependentUpon>
+    </None>
+    <None Include="docker-compose.yml" />
+    <None Include=".dockerignore" />
+    <None Include=".env.example" />
+    <None Include="launchSettings.json" />
+  </ItemGroup>
+</Project>

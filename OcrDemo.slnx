@@ -1,0 +1,15 @@
+<Solution>
+  <!-- Docker Compose (Visual Studio): domyślnie projekt nie byłby kompilowany, a jego kompilacja
+       przygotowuje obrazy i pliki trybu Fast potrzebne do F5. -->
+  <Project Path="docker-compose.dcproj" Type="Docker">
+    <Build />
+  </Project>
+  <Folder Name="/src/">
+    <Project Path="src/OcrDemo.Core/OcrDemo.Core.csproj" />
+    <Project Path="src/OcrDemo.Engines/OcrDemo.Engines.csproj" />
+    <Project Path="src/OcrDemo.Runner/OcrDemo.Runner.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OcrDemo.Tests/OcrDemo.Tests.csproj" />
+  </Folder>
+</Solution>

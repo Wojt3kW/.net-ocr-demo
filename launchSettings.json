@@ -1,0 +1,27 @@
+{
+  "profiles": {
+    "Silniki + runner (debug)": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "composeLaunchServiceName": "runner",
+      "serviceActions": {
+        "runner": "StartDebugging",
+        "ocrmypdf": "StartWithoutDebugging",
+        "paddleocr": "StartWithoutDebugging",
+        "doctr": "StartWithoutDebugging",
+        "docling": "StartWithoutDebugging"
+      }
+    },
+    "Tylko silniki": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "runner": "DoNotStart",
+        "ocrmypdf": "StartWithoutDebugging",
+        "paddleocr": "StartWithoutDebugging",
+        "doctr": "StartWithoutDebugging",
+        "docling": "StartWithoutDebugging"
+      }
+    }
+  }
+}

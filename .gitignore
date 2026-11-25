@@ -424,3 +424,10 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+
+# OCR demo
+output_documents/
+# Dokumenty testowe mogą być poufne – nie trafiają do repozytorium.
+input_documents/*
+!input_documents/README.md
+.env

@@ -1,0 +1,104 @@
+# OCR demo – kontenery silników + runner .NET 10.
+#
+#   docker compose up --build                    # silniki + jednorazowy przebieg runnera (input_documents -> output_documents/<data>)
+#   docker compose up -d --build ocrmypdf paddleocr doctr docling   # same silniki, w tle
+#   docker compose run --rm runner               # kolejny przebieg na działających silnikach
+#   docker compose run --rm runner --engines doctr,ocrmypdf
+#
+# Każdy silnik ma ten sam limit CPU (OCR_CPUS, domyślnie 4) i tyle samo wątków – czasy są porównywalne.
+# Zmiana: plik .env (OCR_CPUS=8) albo `OCR_CPUS=8 docker compose up -d`.
+
+name: ocr-demo
+
+x-cpu-limit: &cpu-limit
+  cpus: ${OCR_CPUS:-4}
+
+services:
+  ocrmypdf:
+    build:
+      context: ./sidecars
+      dockerfile: ocrmypdf/Dockerfile
+    image: ocr-demo/ocrmypdf:17.14.2-tesseract5.5.4
+    <<: *cpu-limit
+    environment:
+      OCR_LANGUAGES: pol+eng
+      OCRMYPDF_JOBS: ${OCR_CPUS:-4}
+      OCRMYPDF_EXTRA_ARGS: --force-ocr --output-type pdf --rotate-pages
+    ports:
+      - "8101:8000"
+
+  paddleocr:
+    build:
+      context: ./sidecars
+      dockerfile: paddleocr/Dockerfile
+    image: ocr-demo/paddleocr:3.7.0
+    <<: *cpu-limit
+    environment:
+      PADDLE_CPU_THREADS: ${OCR_CPUS:-4}
+      OMP_NUM_THREADS: ${OCR_CPUS:-4}
+      PADDLE_ENABLE_MKLDNN: "false"
+      PDF_DPI: "300"
+    ports:
+      - "8102:8000"
+
+  doctr:
+    build:
+      context: ./sidecars
+      dockerfile: doctr/Dockerfile
+    image: ocr-demo/doctr:1.2.0
+    <<: *cpu-limit
+    environment:
+      OMP_NUM_THREADS: ${OCR_CPUS:-4}
+      DOCTR_DETECT_TABLES: "true"
+      PDF_DPI: "300"
+    ports:
+      - "8103:8000"
+
+  docling:
+    image: quay.io/docling-project/docling-serve-cpu:v1.39.0
+    <<: *cpu-limit
+    environment:
+      OMP_NUM_THREADS: ${OCR_CPUS:-4}
+      DOCLING_SERVE_ENABLE_UI: "false"
+      # Domyślnie 120 s – za mało dla wielostronicowych skanów na CPU.
+      DOCLING_SERVE_MAX_SYNC_WAIT: "3600"
+      # Domyślnie 2 s – odpowiedź synchroniczna czeka na kolejne odpytanie kolejki zadań.
+      DOCLING_SERVE_SYNC_POLL_INTERVAL: "1"
+      DOCLING_SERVE_ENG_LOC_NUM_WORKERS: "1"
+      DOCLING_SERVE_LOAD_MODELS_AT_BOOT: "true"
+    ports:
+      - "8104:5001"
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://127.0.0.1:5001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  runner:
+    build:
+      context: .
+      dockerfile: src/OcrDemo.Runner/Dockerfile
+    # Bez tagu ":dev" – tak taguje obraz Visual Studio w trybie Fast (sam etap "base", bez aplikacji).
+    image: ocr-demo/runner
+    # Runner czeka na healthcheck silników, przetwarza input_documents i kończy działanie (restart: "no").
+    restart: "no"
+    depends_on:
+      ocrmypdf:
+        condition: service_healthy
+      paddleocr:
+        condition: service_healthy
+      doctr:
+        condition: service_healthy
+      docling:
+        condition: service_healthy
+    environment:
+      Runner__InputDirectory: /data/input
+      Runner__OutputDirectory: /data/output
+      Engines__OcrMyPdf__BaseUrl: http://ocrmypdf:8000
+      Engines__PaddleOcr__BaseUrl: http://paddleocr:8000
+      Engines__Doctr__BaseUrl: http://doctr:8000
+      Engines__Docling__BaseUrl: http://docling:5001
+    volumes:
+      - ./input_documents:/data/input:ro
+      - ./output_documents:/data/output

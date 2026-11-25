@@ -1,0 +1,3 @@
+# Nadpisania lokalne – docker compose (CLI) i Visual Studio (docker-compose.dcproj) dołączają ten plik automatycznie.
+# Celowo pusty: konfiguracja silników jest w docker-compose.yml, wspólna dla CLI i VS.
+services: {}

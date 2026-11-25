@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- PDF: odczyt i zapis (warstwa tekstowa, kopiowanie stron, obrazy) – Apache-2.0.
+         Uwaga: PDFsharp od 6.5 jest na licencji AGPL-3.0, dlatego go nie używamy. -->
+    <PackageVersion Include="PdfPig" Version="0.1.16" />
+    <!-- Obrazy: TIFF wielostronicowy, PNG, JPG -> strony PDF (Apache-2.0) -->
+    <PackageVersion Include="Magick.NET-Q8-AnyCPU" Version="15.1.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.15" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.15" />
+    <!-- Testy -->
+    <PackageVersion Include="xunit.v3" Version="4.0.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
+  </ItemGroup>
+</Project>
